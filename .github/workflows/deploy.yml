@@ -1,49 +1,49 @@
 name: Deploy to Hetzner Server
 
-on: 
-  push: 
-    branches: [ production ]
+on:
+  push:
+    branches: [production]
   workflow_dispatch:
 
 jobs:
-  deploy: 
+  deploy:
     runs-on: ubuntu-latest
 
-    steps: 
-    - name: Checkout code
-      uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Deploy to server
-      uses: appleboy/ssh-actions@v1.0.3
-      with: 
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: 22
-        script: |
-          echo "🚀 Starting deployment"
+      - name: Deploy to server
+        uses: appleboy/ssh-actions@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "🚀 Starting deployment"
 
-          cd ${{ secrets.PROJECT_PATH }}
+            cd ${{ secrets.PROJECT_PATH }}
 
-          echo "📦 Creating backup..."
-          cp -r . ../backup-$(date +%Y%m%d-%H%M%S) || echo "Backup failed, continuing..."
+            echo "📦 Creating backup..."
+            cp -r . ../backup-$(date +%Y%m%d-%H%M%S) || echo "Backup failed, continuing..."
 
-          echo "📥 Pulling latest changes"
-          git fetch origin
-          git reset --hard origin/production
-          git clean -fd
+            echo "📥 Pulling latest changes"
+            git fetch origin
+            git reset --hard origin/production
+            git clean -fd
 
-          if [ -f "package.json" ]: then
-            echo "📋 Installing dependencies..."
-            npm install --production
-          fi
+            if [ -f "package.json" ]; then
+              echo "📋 Installing dependencies..."
+              npm install --production
+            fi
 
-          if [ -f "package.json" ] && npm run | grep -q "build"; then
-            echo "🔨 Building project..."
-            npm run build
-          fi
+            if [ -f "package.json" ] && npm run | grep -q "build"; then
+              echo "🔨 Building project..."
+              npm run build
+            fi
 
-          echo "🔄 Restarting services..."
-          sudo systemctl reload nginx || echo "Nginx roload failed"
+            echo "🔄 Restarting services..."
+            sudo systemctl reload nginx || echo "Nginx roload failed"
 
-          echo "✅ Deployment completed successfully!"
+            echo "✅ Deployment completed successfully!"
