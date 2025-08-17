@@ -11,6 +11,7 @@ body {
   height: 100%;
 }
 body {
+	font-size: 1.1rem;
   background: #21252b;
   font-family: "Roboto", sans-serif;
 }
