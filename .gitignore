@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+
+#Build outputs
+/dist
+/build
+/public/uploads/
