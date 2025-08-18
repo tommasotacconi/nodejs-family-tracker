@@ -7,7 +7,7 @@ const port = 3000;
 
 const db = new pg.Client({
   user: "njs_user",
-  host: "localhost",
+  host: "195.201.130.186",
   database: "world",
   password: "#remote-njsdb",
   port: 5432,
