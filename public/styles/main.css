@@ -36,7 +36,7 @@ button:disabled {
   opacity: 1;
   transition: opacity 0.5s;
 
-  z-index: -1;
+  /* z-index: -1; */
   margin-top: -90px;
 }
 .ag-canvas_svg {
@@ -96,6 +96,11 @@ button {
   -webkit-transition: all 0.3 ease;
   transition: all 0.3 ease;
   cursor: pointer;
+}
+
+#country-form {
+	position: relative;
+	z-index: 1;
 }
 
 .total-count {

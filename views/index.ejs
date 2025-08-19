@@ -24,7 +24,7 @@
   </form>
 
 	<!-- Form to add a new visited country -->
-  <form action="/add" method="post">
+  <form id="country-form" action="/add" method="post">
     <input type="text" name="country" autofocus placeholder="<%= locals.error ? error :  'Enter country name'%>">
     <button type="submit" style="background-color: <%= color %>;" disabled>Add</button>
   </form>
@@ -394,8 +394,8 @@
     const country_codes = "<%= countries %>".split(",")
     console.log(typeof ("<%= countries %>"))
     country_codes.forEach(code => {
-	const el = document.getElementById(code); 
-	if (el) el.style.fill = "<%= color %>";
+			const el = document.getElementById(code); 
+			if (el) el.style.fill = "<%= color %>";
     });
 
     // Check existance of country before enabling button submit
@@ -410,6 +410,99 @@
         if (result && addButton.disabled) addButton.disabled = false;
         else if (!addButton.disabled) addButton.disabled = true;
     });
+
+		
+		// Add hover labels to SVG world map countries
+		function addCountryHoverLabels() {
+			const svg = document.querySelector('svg');
+			
+			// Create a text element for the label (initially hidden)
+			const hoverLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+			hoverLabel.setAttribute('id', 'country-label');
+			hoverLabel.setAttribute('x', '0');
+			hoverLabel.setAttribute('y', '0');
+			hoverLabel.setAttribute('fill', '#000');
+			hoverLabel.setAttribute('font-family', 'Arial, sans-serif');
+			hoverLabel.setAttribute('font-size', '14');
+			hoverLabel.setAttribute('font-weight', 'bold');
+			hoverLabel.setAttribute('pointer-events', 'none');
+			hoverLabel.style.display = 'none';
+			
+			// Add background for better readibility
+			const labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+			labelBg.setAttribute('id', 'country-label-bg');
+			labelBg.setAttribute('fill', 'white');
+			labelBg.setAttribute('stroke', '#ccc');
+			labelBg.setAttribute('stroke-width', '1');
+			labelBg.setAttribute('rx', '3');
+			labelBg.setAttribute('pointer-events', 'none');
+			labelBg.style.display = 'none';
+
+			// Append to SVG
+			svg.appendChild(labelBg);
+			svg.appendChild(hoverLabel);
+
+			// Get all country paths
+			const countryPaths = svg.querySelectorAll('path');
+			
+			// Proper coordinate conversion function
+			function getMousePositionInSVG(svg, e) {
+				const CTM = svg.getScreenCTM();
+				return {
+					x: (e.clientX - CTM.e) / CTM.a,
+					y: (e.clientY - CTM.f) / CTM.d,
+				}
+			}
+
+			countryPaths.forEach(path => {
+				// Get country name from title attribute
+				let countryName = path.getAttribute('title') || 'Unknown country';
+
+				path.addEventListener('mouseenter', e => {
+					// Get true SVG coordinates
+					const svgPoint = getMousePositionInSVG(svg, e);
+
+					// Set label text and get text dimensions for background
+					hoverLabel.textContent = countryName;
+					hoverLabel.style.display = 'block';
+					const bbox = hoverLabel.getBBox();
+					
+					// Position background
+					labelBg.setAttribute('x', svgPoint.x - (bbox.width + 10) / 2);
+					labelBg.setAttribute('y', svgPoint.y - bbox.height - 10);
+					labelBg.setAttribute('width', bbox.width + 10);
+					labelBg.setAttribute('height', bbox.height);
+					
+					// Position text
+					hoverLabel.setAttribute('x', svgPoint.x - bbox.width / 2);
+					hoverLabel.setAttribute('y', svgPoint.y - 13);
+					
+					// Show background
+					labelBg.style.display = 'block';
+				});
+
+				path.addEventListener('mouseleave', () => {
+					// Hide elements
+					labelBg.style.display = 'none';
+					hoverLabel.style.display = 'none';
+
+				});
+
+				path.addEventListener('mousemove', e => {
+					const svgPoint = getMousePositionInSVG(svg, e);
+
+					const bbox = hoverLabel.getBBox();
+
+					labelBg.setAttribute('x', svgPoint.x - (bbox.width + 10) / 2);
+					labelBg.setAttribute('y', svgPoint.y - bbox.height - 10);
+					hoverLabel.setAttribute('x', svgPoint.x - bbox.width / 2);
+					hoverLabel.setAttribute('y', svgPoint.y - 13);
+				});
+			});
+		}
+
+		// Run when DOM is loaded
+		document.addEventListener('DOMContentLoaded', addCountryHoverLabels);
   </script>
 </body>
 
